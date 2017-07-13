@@ -1,0 +1,31 @@
+<apex:page title="Autobahn for AppExchange {!$Label.trc_ab__AutobahnErrorCodeList_Title}" Controller="TRC_AB.AutobahnErrorCodeListController" tabStyle="TRC_AB__AutobahnEmailSendErrorReport__c" showHeader="false" sidebar="false">
+<apex:sectionHeader title="{!$ObjectType.TRC_AB__AutobahnEmailSendErrorReport__c.label}" subtitle="{!$Label.trc_ab__AutobahnErrorCodeList_Title}" />
+
+<apex:pageBlock >
+
+  <apex:facet name="header">
+    <apex:form style="text-align:center;padding:3px;">
+      <apex:commandButton onclick="window.close()" value="{!$Label.trc_ab__Autobahn_CloseLabel}"/>
+    </apex:form>
+  </apex:facet>
+  
+  <apex:facet name="footer">
+    <apex:form style="text-align:center;padding:3px;">
+      <apex:commandButton onclick="window.close()" value="{!$Label.trc_ab__Autobahn_CloseLabel}"/>
+    </apex:form>
+  </apex:facet>
+  
+  <apex:pageBlockTable value="{!createErrorCodeList}" var="item">
+    <apex:column >
+　　  <apex:facet name="header">{!$Label.trc_ab__AutobahnErrorCodeList_ErrorCode}</apex:facet>
+　　　<apex:outputText value="{!item[0]}" escape="false"/>
+    </apex:column>
+　　<apex:column >
+　　　<apex:facet name="header">{!$Label.trc_ab__AutobahnErrorCodeList_Description}</apex:facet>
+　　　<apex:outputText value="{!item[1]}" escape="false"/>
+　　</apex:column>
+  </apex:pageBlockTable>
+  
+</apex:pageBlock>
+
+</apex:page>

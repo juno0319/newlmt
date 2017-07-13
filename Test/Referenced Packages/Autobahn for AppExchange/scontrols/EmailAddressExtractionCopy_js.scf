@@ -1,0 +1,668 @@
+<script type="text/javascript">
+// EmailAddressExtraction_js
+// S-Control Snippet for AutobahnEmailAddressExtraction
+
+// Highlighting Tab from Within sControl. http://www.interactiveties.com/b_highlight_tab.php
+var tabBar = parent.document.getElementById("tabBar");
+if (tabBar != null) 
+{
+  var parentTable = tabBar.rows[0]; //assign the first row of the parent document table with the Id "tabBar" to a variable
+  for (var a in parentTable.cells) { //for all cells (TDs) in that row (TR)
+	  var tableCell = parentTable.cells[a].innerHTML; //assign the inner HTML of each TD to a variable
+	  if (typeof(tableCell) == "string") { //if the type of the tableCell variable is "string"
+		  if (tableCell.indexOf("抽出条件設定") != -1) { //look at the contents of the string and see if you find the declaration of the pages BODY tag
+			  parentTable.cells[a].className = "currentTab primaryPalette"; //update the class declaration of the table cell that we are currently within
+		  }
+		  if (tableCell.indexOf("メールヘッダ設定") != -1) { //look at the contents of the string and see if you find the declaration of the pages BODY tag
+			  parentTable.cells[a].className = "";
+		  }
+	  }
+  }
+}
+
+function initEmailAddressExtraction()
+{
+    $("datasource").onchange = changeFieldObjects;
+
+    var id = "{!AutobahnEmailAddressExtraction__c.Id}";
+	initUpdating();
+}
+
+function initCreating()
+{
+    getSourceObject();
+    setCriteria();
+}
+
+function initUpdating()
+{
+    var address_extraction = sforce.connection.retrieve("Id, Name, TRC_AB__Name__c, TRC_AB__DataSource__c, TRC_AB__EmailField__c, TRC_AB__Criteria__c", "TRC_AB__AutobahnEmailAddressExtraction__c", ["{!AutobahnEmailAddressExtraction__c.Id}"])[0];
+    
+    var id = "";
+    //var id = address_extraction.Id;
+    var name = address_extraction.Name;
+    var stored_name = address_extraction.TRC_AB__Name__c;
+    var stored_datasource = address_extraction.TRC_AB__DataSource__c;
+    var stored_emailfield = address_extraction.TRC_AB__EmailField__c;
+    var stored_criteria = address_extraction.TRC_AB__Criteria__c;
+
+    setName(stored_name);
+
+    getSourceObject();
+    setDataSource(stored_datasource);
+
+    getFieldObjects();
+    createEmailField(stored_emailfield);
+    setCriteria(stored_criteria);
+}
+
+function SourceObjects()
+{
+    this.objects = new Array();
+}
+SourceObjects.prototype.getObject = function(sobjectName)
+{
+    return this.objects[sobjectName];
+};
+SourceObjects.prototype.addObject = function(source_object)
+{
+    this.objects[source_object.sobjectName] = source_object;
+};
+var source_objects = new SourceObjects();
+
+function getSourceObject()
+{
+    var s = sforce.connection.describeTabs();
+    var strings = new Array();
+    $A(s).each(function(tabcontainer) {
+        $A(tabcontainer.tabs).each(function(tab) {
+            if (tab.sobjectName != null) {
+                var source_object = new Object();
+                source_object.label = tab.label;
+                source_object.sobjectName = tab.sobjectName;
+                source_objects.addObject(source_object);
+            }
+        });
+    });
+    var source_object = new Object();
+    source_object.label = "キャンペーンメンバー";
+    source_object.sobjectName = "CampaignMember";
+    source_objects.addObject(source_object);
+    
+    var s = sforce.connection.describeGlobal();
+
+    var optionstrings = new Array($A(s.fields).length);
+    optionstrings.push('<option value="">------------------------- None -------------------------</option>');
+    $A(s.types).each(function(type)
+    {
+        source_object = source_objects.getObject(type);
+        if (source_object != null) {
+            optionstrings.push('<option value="' + source_object.sobjectName + '">' + source_object.label + '</option>');
+        }
+    });
+    var optionstring = optionstrings.join("\n");
+
+    var selectstring = '<select id="datasource" name="datasource">\n';
+    selectstring += optionstring;
+    selectstring += '</select>\n';
+
+    $("datasource_div").innerHTML = selectstring;
+
+    $("datasource").onchange = changeFieldObjects;
+}
+
+var criteria_count = 0;
+var field_objects = new Array();
+function getFieldObjects()
+{
+    field_objects = describeSObjects($("datasource").options[$("datasource").selectedIndex].value);
+}
+
+function changeFieldObjects()
+{
+    getFieldObjects();
+    createEmailField();
+    for (count = 1; count <= criteria_count - 1; ++count)
+    {
+        createCriteriaField(count);
+        setCriteriaField(count, "");
+    }
+}
+
+function changeFieldValue()
+{
+    createCriteriaOperand(this.id.split("_").pop());
+}
+
+function setName(value)
+{
+    $("name").value = value;
+}
+
+function setDataSource(value)
+{
+    $A($("datasource").options).each(function(option){
+    	if (option.value == value)
+    	{
+    	    option.selected = true;
+	    }
+    });
+}
+
+function setEmailField(value)
+{
+    //replaced to createEmailField(value);
+}
+
+function setCriteria(criteria_string)
+{
+    criteria_count = 0;
+    createMatch();
+    if (typeof(criteria_string) != 'undefined')
+    {
+        var xmlobj = new XML.ObjTree();
+        var xmltree = xmlobj.parseXML(criteria_string);
+
+        setCriteriaMatch(xmltree.criterias.match);
+
+        $A(xmltree.criterias.criteria).each(function(criteria)
+        {
+            ++criteria_count;
+            createCriteria(criteria_count);
+            setCriteriaField(criteria_count, criteria.field);
+            setCriteriaOperand(criteria_count, criteria.operand);
+            setCriteriaValue(criteria_count, criteria.value);
+        });
+    }
+    else
+    {
+      setCriteriaMatch("and");
+    }
+    for (++criteria_count; criteria_count <= 10; ++criteria_count)
+    {
+        createCriteria(criteria_count);
+        setCriteriaField(criteria_count, "");
+        setCriteriaOperand(criteria_count, "");
+        setCriteriaValue(criteria_count, "");
+    }
+}
+function setCriteriaMatch(match)
+{
+  $((match == "or") ? "match_or" : "match_and").checked = true;
+}
+function setCriteriaField(id, value)
+{
+    $A($("field_" + id).options).each(function(option){
+    	if (option.value == value) option.selected = true;
+    });
+}
+function setCriteriaOperand(id, value)
+{
+    createCriteriaOperand(id, value);
+    return;
+
+    $A($("operand_" + id).options).each(function(option){
+    	if (option.value == value) option.selected = true;
+    });
+}
+function setCriteriaValue(id, value)
+{
+    $("value_" + id).value = (typeof value == 'undefined') ? "" : value;
+}
+function createEmailField(selectedname)
+{
+    var emailfield = $("emailfield");
+    dojo.dom.removeChildren(emailfield);
+
+    var option_field = document.createElement("option");
+    option_field.setAttribute("value", "");
+    option_field.innerHTML = "------------------------- None -------------------------";
+    emailfield.appendChild(option_field);
+    var selectedset = false;
+    field_objects.each(function(field_object)
+    {
+        var option_field = document.createElement("option");
+        option_field.setAttribute("value", field_object.name);
+        if (field_object.name == selectedname)
+        {
+            option_field.setAttribute("selected", "selected");
+            selectedset = true;
+        }
+        else if (field_object.name.indexOf(".Email") != -1 && selectedset == false) 
+        {
+            option_field.setAttribute("selected", "selected");
+            selectedset = true;
+        }
+        option_field.innerHTML = field_object.label;
+        emailfield.appendChild(option_field);
+    });
+}
+function createMatch()
+{
+    var table = $("data");
+    var tr = table.insertRow(-1);
+    var td_name = tr.insertCell(-1);
+    var td_data = tr.insertCell(-1);
+    var td_empty1 = tr.insertCell(-1);
+    var td_empty2 = tr.insertCell(-1);
+
+    td_name.setAttribute("class", "labelCol");
+    td_empty1.setAttribute("class", "labelCol empty");
+    td_empty2.setAttribute("class", "dataCol empty");
+    td_empty1.innerHTML = "&nbsp;";
+    td_empty2.innerHTML = "&nbsp;";
+
+    var label = document.createElement("label");
+    label.innerHTML = "<div style=\"font-weight: bold\; text-align: right\;\">条件</div>";
+
+    td_name.appendChild(label);
+
+    td_data.setAttribute("class", "dataCol col02");
+
+    var div = document.createElement("div");
+    div.innerHTML = '<input type="radio" id="match_and" name="match" value="and" checked="checked" /><label for="match_and">すべての条件に一致</label>&nbsp;'
+                  + '<input type="radio" id="match_or"  name="match" value="or" /><label for="match_or">いずれかの条件に一致</label>';
+
+    td_data.appendChild(div);
+}
+function createCriteria(id)
+{
+    var table = $("data");
+    var tr = table.insertRow(-1);
+    var td_name = tr.insertCell(-1);
+    var td_data = tr.insertCell(-1);
+    var td_empty1 = tr.insertCell(-1);
+    var td_empty2 = tr.insertCell(-1);
+
+    td_name.setAttribute("class", "labelCol");
+    td_empty1.setAttribute("class", "labelCol empty");
+    td_empty2.setAttribute("class", "dataCol empty");
+    td_empty1.innerHTML = "&nbsp;";
+    td_empty2.innerHTML = "&nbsp;";
+
+    //var label = document.createElement("label");
+    //if (id == 1)
+    //{
+    //    label.innerHTML = "<div style=\"font-weight: bold\; text-align: right\;\">条件</div>";
+    //}
+
+    //td_name.appendChild(label);
+    
+    td_data.setAttribute("class", "dataCol col02");
+
+    var div = document.createElement("div");
+    div.setAttribute("id", "criteria_" + id);
+    div.setAttribute("name", "criteria");
+    div.setAttribute("style", "white-space: nowrap");
+
+    var span_field = document.createElement("span");
+    span_field.setAttribute("id", "field_" + id + "_span");
+
+    var span_operand = document.createElement("span");
+    span_operand.setAttribute("id", "operand_" + id + "_span");
+
+    var span_value = document.createElement("span");
+    span_value.setAttribute("id", "value_" + id + "_span");
+
+    var span_note = document.createElement("span");
+    span_note.setAttribute("id", "note_" + id + "_span");
+
+    // field
+    var select_field = document.createElement("select");
+    select_field.setAttribute("id", "field_" + id);
+    select_field.setAttribute("name", "field");
+    select_field.onchange = changeFieldValue;
+
+    var option_field = document.createElement("option");
+    option_field.setAttribute("value", "");
+    option_field.innerHTML = "------------------------- None -------------------------";
+    select_field.appendChild(option_field);
+
+    // operand
+    var select_operand = document.createElement("select");
+    select_operand.setAttribute("id", "operand_" + id);
+    select_operand.setAttribute("name", "operand");
+
+    var option_operand = document.createElement("option");
+    option_operand.setAttribute("value", "");
+    option_operand.innerHTML = "------------ None ------------";
+    select_operand.appendChild(option_operand);
+
+    // text
+    var text_value = document.createElement("input");
+    text_value.setAttribute("type", "text");
+    text_value.setAttribute("id", "value_" + id);
+    text_value.setAttribute("name", "value");
+
+    // label
+    var text_note = document.createElement("span");
+    text_note.setAttribute("id", "note_" + id);
+
+    // spans
+    span_field.appendChild(select_field);
+    span_operand.appendChild(select_operand);
+    span_value.appendChild(text_value);
+    span_note.appendChild(text_note);
+
+    // divs
+    div.appendChild(span_field);
+    div.appendChild(span_operand);
+    div.appendChild(span_value);
+    div.appendChild(span_note);
+    td_data.appendChild(div);
+
+    createCriteriaField(id);
+}
+function createCriteriaField(id)
+{
+    var criteriafield = $("field_" + id);
+    dojo.dom.removeChildren(criteriafield);
+
+    var option_field = document.createElement("option");
+    option_field.setAttribute("value", "");
+    option_field.innerHTML = "------------------------- None -------------------------";
+    criteriafield.appendChild(option_field);
+    field_objects.each(
+        function(field_object)
+        {
+            var option_field = document.createElement("option");
+            option_field.setAttribute("value", field_object.name);
+            option_field.innerHTML = field_object.label;
+            criteriafield.appendChild(option_field);
+        }
+    );
+}
+function createCriteriaOperand(id, value)
+{
+    var field_element = $("field_" + id);
+    var field_object = null;
+    field_objects.each(function(fobj)
+    {
+        if (fobj.name == field_element.value)
+        {
+          field_object = fobj;
+        }
+    });
+    var criteriaoperand = $("operand_" + id);
+    dojo.dom.removeChildren(criteriaoperand);
+    
+    var option_operand = document.createElement("option");
+    option_operand.setAttribute("value", "");
+    option_operand.innerHTML = "------------ None ------------";
+    criteriaoperand.appendChild(option_operand);
+    
+    // Set visible operands each types
+    var fields = {};
+    fields["id"]            = { operands: new Array("e", "n", "s", "c", "k"),                     note: ""};
+    fields["reference"]     = { operands: new Array("e", "n", "s", "c", "k"),                     note: ""};
+    fields["string"]        = { operands: new Array("e", "n", "s", "c", "k", "l", "g", "m", "h"), note: ""};
+    fields["textarea"]      = { operands: new Array("e", "n", "s", "c", "k", "l", "g", "m", "h"), note: ""};
+    fields["phone"]         = { operands: new Array("e", "n", "s", "c", "k", "l", "g", "m", "h"), note: ""};
+    fields["email"]         = { operands: new Array("e", "n", "s", "c", "k", "l", "g", "m", "h"), note: ""};
+    fields["url"]           = { operands: new Array("e", "n", "s", "c", "k", "l", "g", "m", "h"), note: ""};
+    fields["boolean"]       = { operands: new Array("e", "n"),                                    note: " 例)\"1\",\"0\",\"true\",\"false\""};
+    fields["picklist"]      = { operands: new Array("e", "n", "l", "g", "m", "h", "u", "x"),      note: ""};
+    fields["multipicklist"] = { operands: new Array("e", "n", "u", "x"),                          note: " 例)\"項目1;項目2;項目3\""};
+    fields["date"]          = { operands: new Array("e", "n", "l", "g", "m", "h"),                note: " 例)\"YYYY/MM/DD\""};
+    fields["datetime"]      = { operands: new Array("e", "n", "l", "g", "m", "h"),                note: " 例)\"YYYY/MM/DD HH:MM\""};
+    fields["currency"]      = { operands: new Array("e", "n", "l", "g", "m", "h"),                note: ""};
+    fields["int"]           = { operands: new Array("e", "n", "l", "g", "m", "h"),                note: ""};
+    fields["double"]        = { operands: new Array("e", "n", "l", "g", "m", "h"),                note: ""};
+    fields["percent"]       = { operands: new Array("e", "n", "l", "g", "m", "h"),                note: ""};
+    fields["undefined"]     = { operands: new Array("e", "n", "s", "c", "k", "l", "g", "m", "h", "u", "x"), note: ""};
+
+    var operandtypes = {};
+    operandtypes["e"] = { value: "e", text: "次の文字列と一致する" };
+    operandtypes["n"] = { value: "n", text: "次の文字列と一致しない" };
+    operandtypes["s"] = { value: "s", text: "次の文字列で始まる" };
+    operandtypes["c"] = { value: "c", text: "次の文字列を含む" };
+    operandtypes["k"] = { value: "k", text: "次の文字列を含まない" };
+    operandtypes["l"] = { value: "l", text: "＜" };
+    operandtypes["g"] = { value: "g", text: "＞" };
+    operandtypes["m"] = { value: "m", text: "＜＝" };
+    operandtypes["h"] = { value: "h", text: "＞＝" };
+    operandtypes["u"] = { value: "u", text: "次の値を含む" };
+    operandtypes["x"] = { value: "x", text: "次の値を含まない" };
+    
+    if (field_object == null)
+    {
+      return;
+    }
+
+    var field_type = field_object.type.split(".").pop();
+    if (field_type in fields)
+    {
+        var field = fields[field_type];
+        field["operands"].each(function(operand)
+        {
+            var option_operand = document.createElement("option");
+            option_operand.setAttribute("value", operandtypes[operand]["value"]);
+            option_operand.innerHTML = operandtypes[operand]["text"];
+            if (operandtypes[operand]["value"] == value)
+            {
+              option_operand.setAttribute("selected", "selected");
+            }
+            criteriaoperand.appendChild(option_operand);
+        });
+    }
+    else
+    {
+        var field = fields[field_type];
+        field["operands"].each(function(operand)
+        {
+            var option_operand = document.createElement("option");
+            option_operand.setAttribute("value", operandtypes[operand]["value"]);
+            option_operand.innerHTML = operandtypes[operand]["text"];
+            criteriaoperand.appendChild(option_operand);
+            if (operandtypes[operand]["value"] == value)
+            {
+              option_operand.setAttribute("selected", "selected");
+            }
+        });
+    }
+    var criterianote = $("note_" + id);
+    criterianote.innerHTML = fields[field_type]["note"];
+}
+
+function describeSObjects(name, parent)
+{
+    var values = new Array();
+    var references = new Array();
+
+    if (name == '') return values;
+
+    var sobject = sforce.connection.describeSObject(name); 
+    $A(sobject.fields).each(function(field)
+    {
+        var field_object = new Object();
+        var source_object = source_objects.getObject(name);
+        if (source_object != null)
+        {
+            field_object.name = (typeof parent == 'undefined') ? name + "." + field.name : parent.name + "." + name + "." + field.name;
+            field_object.label = (typeof parent == 'undefined') ? source_object.label + "." + field.label : parent.label + "." + source_object.label + "." + field.label;
+            field_object.type = (typeof parent == 'undefined') ? source_object.type + "." + field.type : parent.type + "." + source_object.type + "." + field.type;
+            field_object.soapType = (typeof parent == 'undefined') ? source_object.soapType + "." + field.soapType : parent.soapType + "." + source_object.soapType + "." + field.soapType;
+            values.push(field_object);
+            if (field.referenceTo != "" && field.referenceTo != null && field.referenceTo == field.relationshipName)
+            {
+                references.push(field.referenceTo);
+            }
+        }
+    });
+    references.each(function(reference)
+    {
+        var p = new Object();
+        var source_object = source_objects.getObject(name);
+        if (source_object != null)
+        {
+            p.name =  (typeof parent == 'undefined') ? name : parent.name + "." + name;
+            p.label = (typeof parent == 'undefined') ? source_object.label : parent.label + "." + source_object.label;
+            p.type = (typeof parent == 'undefined') ? source_object.type : parent.type + "." + source_object.type;
+            p.soapType = (typeof parent == 'undefined') ? source_object.soapType : parent.soapType + "." + source_object.soapType;
+            var field_objects = describeSObjects(reference, p);
+            field_objects.each(function(field_object)
+            {
+                values.push(field_object);
+            });
+        }
+    });
+    return values;
+}
+
+
+
+
+
+
+
+
+function getCriterias()
+{
+    var criterias = new Array();
+    var elements = document.getElementsByName("criteria");
+
+    dojo.lang.forEach($A(elements), function(element)
+    {
+        var fields = Form.getElements(element.id);
+        var criteria = new Array();
+        dojo.lang.forEach($A(fields), function(field)
+        {
+            criteria[field.name] = field.value;
+        });
+        criterias.push(criteria);
+    });
+
+    var match = ($("match_or").checked == true) ? "or" : "and";
+    var criteria_string = getCriteriaString(criterias, match);
+    return criteria_string;
+}
+
+function getCriteriaString(criterias, match)
+{
+	var array = new Array();
+	array.push("<criterias>");
+	array.push("<match>" + match + "</match>");
+	array.push(criterias.map(function(criteria) {
+		var array = new Array();
+		array.push("<criteria>");
+		array.push("<field>" + criteria.field + "</field>");
+		array.push("<operand>" + criteria.operand + "</operand>");
+		array.push("<value>" + criteria.value.escapeHTML() + "</value>");
+		array.push("</criteria>");
+		return array.join('\n');
+	}).join('\n'));
+	array.push("</criterias>");
+	return array.join('\n');
+}
+
+if(typeof(window.external) != 'undefined')
+{
+    //yes, this is evil browser sniffing, but only IE has this bug
+    document.getElementsByName = function(name, tag)
+    {
+        if(!tag)
+        {
+            tag = '*';
+        }
+        var elems = document.getElementsByTagName(tag);
+        var res = []
+        for(var i=0;i<elems.length;i++)
+        {
+            att = elems[i].getAttribute('name');
+            if(att == name)
+            {
+                res.push(elems[i]);
+            }
+        }
+        return res;
+    }
+}
+
+function execute(type)
+{
+    switch(type)
+    {
+    case "save":
+        saveEmailAddressExtraction();
+        break;
+    case "savenew":
+        saveEmailAddressExtraction();
+        break;
+    case "cancel":
+        cancelEmailAddressExtraction();
+        break;
+    }
+}
+
+function displayView(id)
+{
+    parent.location.href = "/" + id; //
+}
+
+function cancelEmailAddressExtraction()
+{
+    parent.location.href = "{!$Request.retURL}";
+}
+
+function saveEmailAddressExtraction()
+{
+    var id = "";
+    //var id = "{!AutobahnEmailAddressExtraction__c.Id}";
+    var address_extraction = new sforce.SObject('TRC_AB__AutobahnEmailAddressExtraction__c');
+
+    var input_name = $("name").value;
+    var saved_name = "{!AutobahnEmailAddressExtraction__c.Name}";
+
+    if (id != undefined) address_extraction.Id = id;
+    address_extraction.TRC_AB__Name__c = $("name").value;
+    address_extraction.TRC_AB__DataSource__c = $("datasource").options[$("datasource").selectedIndex].value;
+    address_extraction.TRC_AB__EmailField__c = $("emailfield").options[$("emailfield").selectedIndex].value;
+    address_extraction.TRC_AB__Criteria__c = getCriterias();
+
+    var errmsg = document.getElementById("errorDiv_ep");
+    if (errmsg.childNodes.length == 0) {
+        errmsg.appendChild(document.createTextNode(""));
+    } else {
+         errmsg.childNodes[0].nodeValue = "";
+    }
+
+    if (address_extraction.TRC_AB__Name__c == "")
+    {
+        errmsg.childNodes[0].nodeValue = "名称を設定してください。";
+        return;
+    }
+    if (address_extraction.TRC_AB__DataSource__c == "")
+    {
+        errmsg.childNodes[0].nodeValue = "オブジェクトを設定してください。";
+        return;
+    }
+    if (address_extraction.TRC_AB__EmailField__c == "")
+    {
+        errmsg.childNodes[0].nodeValue = "メールアドレスを設定してください。";
+        return;
+    }
+
+    var callback=
+    { 
+        onSuccess:function(response) 
+        {
+            if (response[0].getBoolean("success") == false)
+            {
+                var err_text = response[0].getArray("errors").toString();
+                if ( err_text.indexOf("statusCode:'DUPLICATE_VALUE'") != -1 )
+                {
+                    errmsg.childNodes[0].nodeValue = "その名称は既に登録されています。";
+                    return;
+                }
+            }
+            displayView(response[0].id);
+        },
+        onFailure:function(error)
+        { 
+            alert("failure" + error);
+        } 
+    };
+    var result = sforce.connection.upsert("Id", [address_extraction], callback);
+
+}
+</script>

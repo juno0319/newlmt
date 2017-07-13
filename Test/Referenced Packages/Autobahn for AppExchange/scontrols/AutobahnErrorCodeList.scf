@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Autobahn for AppExchange エラーコード表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="/sCSS/Theme2/ja/common.css" type="text/css"
+media="handheld,print,projection,screen,tty,tv" rel="stylesheet"></link>
+<link href="/sCSS/Theme2/allCustom.css" type="text/css"
+media="handheld,print,projection,screen,tty,tv" rel="stylesheet"></link>
+<style type="text/css">
+table, th, td
+{
+border: 1px #ED2893 solid;
+padding: 2px;
+}
+.Custom312Tab .bPageTitle .pageTitleIcon
+{
+background-image: url('/servlet/servlet.FileDownload?file=01570000000Z7yQ');
+width:32px;
+height:32px;
+}
+</style>
+<body class="Custom312Tab"> 
+
+<div class=bPageTitle>
+<div class="ptBody secondaryPalette">
+<div class="content" style="padding-left:10px">
+<img title="ルックアップ" class="pageTitleIcon" alt="ルックアップ" src="/s.gif"/>
+<h1 class="pageType noSecondHeader">エラーコード表</h1>
+<div class="blank"></div>
+</div>
+</div>
+</div> 
+
+
+<table>
+<tr>
+<td>
+■エラーコード1xx形式
+</td>
+<td>
+宛先不明や受信拒否で配信できなかった。
+非効率なメール配信となるだけでなく、キャリアメールサーバからの拒否される原因となりますので、配信メールアドレスリストのクリーニング対象となります。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード110(user unknown)
+</td>
+<td>
+宛先不明で配送できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード120(user reject)
+</td>
+<td>
+ユーザ受信拒否で配送できなかった。
+※このエラーは、DoCoMo宛の場合、及び、au宛でユーザがメールフィルタなどを設定し、かつ、エラーメールを「返信する」と選択した場合に発生します。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード130(invalid address)
+</td>
+<td>
+キャリアの規定上不正なメールアドレスであったため配送できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード2xx形式
+</td>
+<td>
+最大メールサイズオーバーや、メールボックスフルなどで、配信できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード210(large mail reject)
+</td>
+<td>
+メールサイズオーバーで配送できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード220(mail box full)
+</td>
+<td>
+メールボックスフルで配送できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード230(invalid header)
+</td>
+<td>
+From ヘッダの値がなかったため配送できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード240(line too long)
+</td>
+<td>
+1行が1000Byteを超えたことによるエラーで、配送できなかったことを意味します。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード5xx形式
+</td>
+<td>
+配送先サーバ不明や接続不可などで、配送できなかった。
+</td>
+</tr>
+<tr>
+<td>
+■エラーコード 510(server unkown/not found)
+</td>
+<td>
+配送先サーバが見つからない、または、接続不可のため配送できなかった。
+配送先ドメインが存在しないなどの可能性があり、クリーニングの対象となる可能性があります。
+</td>
+</tr>
+<tr>
+<td>
+■未定義エラーコード（-1）
+</td>
+<td>
+Autobahn for Appexchangeのでは内容が定義されていないエラーメールの場合、エラーコードは"-1"と出力されます。
+</td>
+</tr>
+</table>
+
+</body>
+</html>

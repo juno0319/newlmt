@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+"http://www.w3.org/TR/html4/loose.dtd"> 
+<html> 
+<head> 
+<title>抽出条件設定</title> 
+
+<link href="/sCSS/Theme2/ja/common.css" type="text/css" media="handheld,print,projection,screen,tty,tv" rel="stylesheet" /> 
+<link href="/sCSS/Theme2/allCustom.css" type="text/css" media="handheld,print,projection,screen,tty,tv" rel="stylesheet" /> 
+<style type="text/css">
+.Custom312Tab .bPageTitle .pageTitleIcon 
+{ 
+    background-image: url('/servlet/servlet.FileDownload?file=01570000000Z7yQ');
+    width:32px;
+	height:32px;
+}
+</style>
+<script src="/soap/ajax/10.0/connection.js" type="text/javascript"></script>
+<script src="/js/dojo/0.4.1/dojo.js" type="text/javascript"></script>
+
+{!INCLUDE($SControl.xml_objtree_js)}
+{!INCLUDE($SControl.url_webtoolkit_js)}
+{!INCLUDE($SControl.prototype_js)}
+{!INCLUDE($SControl.EmailAddressExtractionCopy_js)}
+
+</head>
+<body class="Custom312Tab" onload="initEmailAddressExtraction()"> 
+
+<div class=bPageTitle> 
+<div class="ptBody secondaryPalette"> 
+<div class="content" style="padding-left:10px"> 
+<img title="ルックアップ" class="pageTitleIcon" alt="ルックアップ" src="/s.gif"/> 
+<h1 class="pageType noSecondHeader">抽出条件設定</h1> 
+<div class="blank"></div> 
+</div> 
+</div> 
+</div> 
+
+<form id="form">
+    
+<div class="bPageBlock bEditBlock secondaryPalette" id="ep">
+<div class="pbHeader">
+<table  border="0" cellpadding="0" cellspacing="0">
+<tr>
+<td class="pbTitle">
+<img src="/s.gif" alt="" width="1" height="1" class="minWidth" title="" /><h2 class="mainTitle">抽出条件設定 Edit</h2>
+</td>
+<td class="pbButton">
+<input value=" 保存 "  class="btn" name="save" tabindex="6" title="保存" type="button" onclick="execute('save')" /> 
+<!--
+<input value="保存 & 新規"  class="btn" name="save_new" tabindex="7" title="保存 &amp; 新規" type="button" onclick="execute('savenew')" /> 
+-->
+<input value=" キャンセル "  class="btn" name="cancel" tabindex="8" title="キャンセル" type="button" onclick="execute('cancel')" />
+</td>
+</tr>
+</table></div><div class="pbBody"><div class="pbError" id="errorDiv_ep"></div>
+
+
+
+
+
+<div class="pbSubsection">
+<table id="data" class="detailList" border="0" cellpadding="0" cellspacing="0">
+
+<!--
+<tr>
+<td class="labelCol"><label>Name</label></td>
+<td class="dataCol col02">{!AutobahnEmailAddressExtraction__c.Id}: {!AutobahnEmailAddressExtraction__c.Name}</td>
+</tr>
+-->
+
+<tr>
+<td class="labelCol requiredInput"><label><span class="requiredMark">*</span>名称</label></td>
+<td class="dataCol col02"><div class="requiredInput"><div class="requiredBlock"></div><input  id="name" maxlength="255" name="name" size="20" tabindex="1" type="text" /></div></td>
+</tr>
+
+<tr>
+<td class="labelCol requiredInput"><label><span class="requiredMark">*</span>オブジェクト</label></td>
+<td class="dataCol col02">
+    <div class="requiredInput"><div class="requiredBlock"></div>
+    <div id="datasource_div">
+    	<select id="datasource" name="datasource">
+    		<option value="">------------------------- None-------------------------</option>
+    	</select>
+    </div>
+    </div>
+</td>
+<td class="labelCol empty">&nbsp;</td>
+<td class="dataCol empty">&nbsp;</td>
+</tr>
+
+<tr>
+<td class="labelCol requiredInput"><label><span class="requiredMark">*</span>メールアドレス</label></td>
+<td class="dataCol col02">
+    <div class="requiredInput"><div class="requiredBlock"></div>
+    <div id="emailfield_div">
+	<select id="emailfield" name="emailfield">
+		<option value="">------------------------- None-------------------------</option>
+	</select>
+	</div>
+	</div>
+</td>
+<td class="labelCol empty">&nbsp;</td>
+<td class="dataCol empty">&nbsp;</td>
+</tr>
+
+<!-- criteria -->
+
+</table>
+</div>
+</div>
+
+<div class="pbBottomButtons">
+<table  border="0" cellpadding="0" cellspacing="0">
+<tr>
+<td class="pbTitle"><img src="/s.gif" alt="" width="1" height="1" class="minWidth" title="" />&nbsp;</td>
+<td class="pbButtonb">
+<input value=" 保存 "  class="btn" name="save" tabindex="6" title="保存" type="button" onclick="execute('save')" /> 
+<!--
+<input value="保存 & 新規"  class="btn" name="save_new" tabindex="7" title="保存 &amp; 新規" type="button" onclick="execute('savenew')" /> 
+-->
+<input value=" キャンセル "  class="btn" name="cancel" tabindex="8" title="キャンセル" type="button" onclick="execute('cancel')" />
+</td>
+</tr>
+</table></div>
+
+<div id="test"></div>
+
+</div>
+
+</form>
+
+
+</body>
+</html>

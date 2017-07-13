@@ -1,0 +1,245 @@
+<apex:page standardController="TRC_AB__AutobahnEmailAddressExtraction__c" 
+    extensions="TRC_AB.AutobahnCriteriaExtension" 
+    showHeader="true" 
+    tabstyle="TRC_AB__AutobahnEmailAddressExtraction__c">
+
+<!-- style -->
+<style >
+.error_msg {
+    font-weight: bold;
+    color: #e80000;
+}
+</style>
+
+
+<!-- 抽出条件設定 -->
+<apex:sectionHeader title="{!$Label.trc_ab__AutobahnCriteria_MainTitleLalel}" id="condition_header" />
+
+<apex:form id="condition_form" >
+    <apex:pageBlock title="{!$Label.trc_ab__AutobahnCriteria_EditPageTitle}" mode="edit" id="condition_edit">
+
+    <apex:pageMessages />
+    
+    <apex:pageblockButtons >
+        <apex:commandButton action="{!save}" value="{!$Label.trc_ab__Autobahn_SaveLabel}"></apex:commandButton>
+        <apex:commandButton action="{!cancel}" value="{!$Label.trc_ab__Autobahn_CancelLabel}"></apex:commandButton>
+    </apex:pageblockButtons>
+    
+    <!-- Input header Table -->
+    <table border="0" width="1100" id='condition_header_table' >
+    <caption></caption>
+
+    <colgroup span="1" align="right" >
+        <col width='100' />
+    </colgroup>
+    <colgroup span="3" align="left" >
+        <col width='680' />
+    </colgroup>
+    <colgroup span="1" align="left" >
+        <col width='220' />
+    </colgroup>
+    
+    <tbody id="target_rows">
+        <tr>
+            <!-- 名前 -->
+            <th class="labelCol requiredInput">{!$Label.AutobahnCriteria_NameLalel}</th>
+            <td><apex:inputField value="{!criteria_data.TRC_AB__Name__c}" required="true" style="width: 300px;" /></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <!-- オブジェクト -->
+            <th class="labelCol requiredInput">{!$Label.trc_ab__AutobahnCriteria_ObjectLabel}</th>
+            <td>
+                <div class="requiredInput">
+                <div class="requiredBlock"> </div>
+                <apex:actionRegion >
+                    <apex:selectList title="{!$Label.trc_ab__AutobahnCriteria_ObjectLabel}" value="{!objectitem}" size="1" required="false" multiselect="false" id="objectitems" onChange="rerenderObject(this.value)">
+                        <apex:selectOptions value="{!objectitems}" />
+                    </apex:selectList>
+                    <apex:actionStatus id="object_load" startText=" Loading.... " startStyle="font-weight: bold;">
+                    </apex:actionStatus>
+                    <apex:actionSupport event="onchange" rerender="objectitems" status="object_load" />
+                    
+                    <apex:actionFunction action="{!updatefields}" name="rerenderObject" rerender="fielditems,conditionitems,operanditems,conditionfield.operanditems,conditionmessage,conditionerror" immediate="true" status="object_load" >
+                        <apex:param name="firstParam" assignTo="{!objectitem}" value="" />
+                    </apex:actionFunction>
+                </apex:actionRegion>
+                </div>
+            </td>
+            <td colspan='2'>
+                <apex:outputText id="object_validation" value="{!objectmessage}" styleClass="error_msg" ></apex:outputText></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <!-- メールアドレス -->
+            <th class="labelCol requiredInput">{!$Label.trc_ab__AutobahnCriteria_MailAddress}</th>
+            <td>
+                <div class="requiredInput">
+                <div class="requiredBlock"> </div>
+                    <apex:selectList title="{!$Label.trc_ab__AutobahnCriteria_MailAddress}" value="{!fielditem}" size="1" required="false" multiselect="false" id="fielditems">
+                        <apex:selectOptions value="{!fielditems}" />
+                    </apex:selectList>
+                    
+                    <apex:actionSupport event="onchange" rerender="fielditems" status="status" />
+                </div>
+                <apex:actionSupport event="onchange" rerender="fielditems" status="field_load" />
+            </td>
+            <td colspan='2' >
+                <apex:outputText id="field_validation" value="{!fieldmessage}" styleClass="error_msg" ></apex:outputText></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <!--
+        <tr>
+            <!-- ロール設定 --
+            <th class="labelCol requiredInput">ロールフィールド</th>
+            <td>
+                <div class="requiredInput">
+                <div class="requiredBlock"> </div>
+                    <apex:selectList title="ロールフィールド" value="{!userroleitem}" size="1" required="false" multiselect="false" id="roleitems">
+                        <apex:selectOptions value="{!userrolelist}" />
+                    </apex:selectList>
+                    
+                    <apex:actionSupport event="onchange" rerender="roleitems" status="status" />
+                </div>
+            </td>
+            <td colspan='2' ></td>
+            <td></td>
+            <td></td>
+        </tr>
+        -->
+        
+        <tr>
+            <!-- 条件 -->
+            <th class="labelCol requiredInput">{!$Label.AutobahnCriteria_ConditionLalel}</th>
+            <td>
+            <apex:selectRadio value="{!condition}" id="conditions" onclick="chengeType();" >
+                <apex:selectOptions value="{!conditions}"/>
+            </apex:selectRadio>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr id="custom_condition_row">
+            <!-- 条件指定 -->
+            <th class="labelCol requiredInput">{!$Label.AutobahnCriteria_CustomLabel}</th>
+            <td>
+                <apex:inputText value="{!customcondition}" id="custom_condition" style="width: 400px;" />
+                {!$Label.Autobahn_ExampleLabel} : (1 and 2) or 3 
+                <br />
+                <apex:outputText id="customcondtionerror" rendered="true" value="{!customcondition_error}" styleClass="error_msg" />
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        
+        <!-- javascript -->
+        <script type="text/javascript" >
+function chengeType() {
+    var cond = document.getElementById("{!$Component.condition_form.condition_edit.conditions}");
+    var ipts = cond.getElementsByTagName("input");
+    
+    var ccr = document.getElementById("custom_condition_row");
+    for (var i=0; i<ipts.length; i++) {
+        if (ipts[i].checked === true) {
+            if (ipts[i].value === 'custom') {
+                ccr.style.display = "";
+            } else {
+                ccr.style.display = "none";
+            }
+        }
+    }
+}
+chengeType();
+</script>
+
+
+    </tbody>
+    </table>
+    
+    <!-- Input Table -->
+    <table border="0" id='condition_table' >
+    <caption></caption>
+    
+    <colgroup span="1" align="right" >
+        <col width='100' />
+    </colgroup>
+    
+    <tbody id="condition_rows">
+        <!-- javascript -->
+        <script type="text/javascript" >
+            var arrayFunc = [];
+        </script>
+        
+        <apex:repeat value="{!conditionfieldlist}" var="conditionfield" rows="10" >
+            <tr>
+            <th class="labelCol">{!conditionfield.id + 1}</th>
+            <td>
+                <apex:selectList title="{!$Label.trc_ab__AutobahnCriteria_ConditionFieldNameLabel}" value="{!conditionfield.field}" size="1" multiselect="false" id="conditionitems" onchange="change_{!conditionfield.id}(this.value,'{!conditionfield.id}')" >
+                    <apex:selectOptions value="{!conditionitems}"/>
+                </apex:selectList>
+
+                <apex:actionFunction action="{!updateoperands}" name="change_{!conditionfield.id}" reRender="{!$Component.operanditems},conditionmessage,conditionitemsvalue" immediate="true" status="operand_load" >
+                    <apex:param name="firstParam" assignTo="{!conditionfieldname}" value="{!conditionfield.field}" />
+                    <apex:param name="secondParam" assignTo="{!conditionrow}" value="{!conditionfield.id}" />
+                </apex:actionFunction>
+            </td>
+            <td style="text-align: center;">
+                <apex:actionStatus id="operand_load" startText=" Loading.... " startStyle="font-weight: bold;">
+                <apex:facet name="stop">
+                    <apex:selectList title="{!$Label.trc_ab__AutobahnCriteria_OperandLabel}" value="{!conditionfield.operand}" size="1" multiselect="false" id="operanditems" onchange="change_operand_{!conditionfield.id}(this.value)" >
+                        <apex:selectOptions value="{!conditionfield.operanditems}" />
+                    </apex:selectList>
+                </apex:facet>
+                </apex:actionStatus>
+                
+                <apex:actionFunction action="{!updateoperand}" name="change_operand_{!conditionfield.id}" reRender="conditionitems" immediate="true" >
+                    <apex:param name="firstParam" assignTo="{!conditionoperand}" value="{!conditionfield.operand}" />
+                    <apex:param name="secondParam" assignTo="{!conditionrow}" value="{!conditionfield.id}" />
+                </apex:actionFunction>
+                <apex:actionSupport event="onchange" rerender="operanditems" status="operand_load" />
+                
+                <br />
+                <apex:outputText id="conditionwarning" rendered="true" value="{!conditionfield.warning}" styleClass="error_msg" />
+            </td>
+            <td>
+                <apex:inputText title="{!$Label.trc_ab__AutobahnCriteria_ConditionValueLabel}" value="{!conditionfield.value}" id="conditionvalue" style="width: 140px;" />
+                <br />
+                <apex:outputText id="conditionerror" rendered="true" value="{!conditionfield.error}" styleClass="error_msg" />
+            </td>
+            <td>
+                <apex:outputText id="conditionmessage" rendered="true" value="{!conditionfield.message}" />
+            </td>
+            </tr>
+            
+<!-- javascript -->
+<script type="text/javascript">
+arrayFunc.push( function() {
+    change_{!conditionfield.id}( document.getElementById("{!$Component.conditionitems}").value );
+} );
+</script>
+
+        </apex:repeat>
+    </tbody>
+    </table>
+    <!--//Input Table -->
+
+<!-- javascript -->
+<script type="text/javascript" src="/soap/ajax/22.0/connection.js"></script>
+<script type="text/javascript" src="/js/dojo/0.9/dojo/dojo.js"></script> 
+
+    </apex:pageBlock>
+</apex:form>
+
+
+<script type="text/javascript">
+//init();
+for (var i=0; i<arrayFunc.length; i++) {
+    //arrayFunc[i]();
+}
+</script>
+
+</apex:page>

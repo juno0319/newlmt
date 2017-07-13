@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>Accept</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Clone</actionName>
+        <content>AutobahnCriteriaEdit</content>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Visualforce</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Delete</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Edit</actionName>
+        <content>AutobahnCriteriaEdit</content>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Visualforce</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>List</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>New</actionName>
+        <content>AutobahnCriteriaEdit</content>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Visualforce</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Tab</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>false</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <fields>
+        <fullName>ConditionQuery__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>SOQL</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>Criteria__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>条件</label>
+        <length>32000</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>20</visibleLines>
+    </fields>
+    <fields>
+        <fullName>CustomCondition__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>カスタム条件</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>DataSource__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>オブジェクト</label>
+        <length>255</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>EmailField__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>メールアドレス</label>
+        <length>255</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Name__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>名称</label>
+        <length>255</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <label>抽出条件設定</label>
+    <listViews>
+        <fullName>View</fullName>
+        <columns>NAME</columns>
+        <columns>Name__c</columns>
+        <columns>DataSource__c</columns>
+        <columns>EmailField__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>すべて選択</label>
+    </listViews>
+    <nameField>
+        <displayFormat>{0000}</displayFormat>
+        <label>抽出条件ID</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <searchLayouts>
+        <customTabListAdditionalFields>Name__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>DataSource__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>EmailField__c</customTabListAdditionalFields>
+        <lookupDialogsAdditionalFields>Name__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>DataSource__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>EmailField__c</lookupDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>Name__c</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>DataSource__c</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>EmailField__c</lookupPhoneDialogsAdditionalFields>
+        <searchFilterFields>NAME</searchFilterFields>
+        <searchFilterFields>Name__c</searchFilterFields>
+        <searchFilterFields>DataSource__c</searchFilterFields>
+        <searchFilterFields>EmailField__c</searchFilterFields>
+        <searchResultsAdditionalFields>Name__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>DataSource__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>EmailField__c</searchResultsAdditionalFields>
+    </searchLayouts>
+    <sharingModel>ReadWrite</sharingModel>
+    <webLinks>
+        <fullName>TestMail</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>この抽出条件の件数をメールで送信</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <url>{!requireScript(&quot;/soap/ajax/11.0/connection.js&quot;)}
+
+var id = &quot;{!AutobahnEmailAddressExtraction__c.Id}&quot;;
+
+var testmail = new sforce.SObject(&apos;TRC_AB__AutobahnTestMail__c&apos;);
+testmail.TRC_AB__ObjectId__c = id;
+
+var callback=
+{
+onSuccess:function(response)
+{
+alert(&quot;現時点の抽出件数をメールで送信しました。\n５分以内にログインされているユーザーの登録電子メール宛に送信されます。&quot;);
+},
+onFailure:function(error)
+{
+alert(&quot;抽出件数メールの送信登録に失敗しました。\n&quot; + error);
+}
+};
+
+sforce.connection.create([ testmail ], callback);</url>
+    </webLinks>
+</CustomObject>
